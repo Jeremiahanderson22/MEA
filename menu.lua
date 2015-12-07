@@ -33,7 +33,7 @@ function scene:create( event )
 	-- e.g. add display objects to 'sceneGroup', add touch listeners, etc.
 
 	-- display a background image
-	local background = display.newImageRect( "WOOD.png", display.contentWidth, display.contentHeight )
+	local background = display.newImageRect( "GreenB.png", display.contentWidth, display.contentHeight )
 	background.anchorX = 0
 	background.anchorY = 0
 	background.x, background.y = 0, 0
@@ -45,11 +45,11 @@ function scene:create( event )
 	
 	-- create a widget button (which will loads level1.lua on release)
 	playBtn = widget.newButton{
-		label="Play Now",
+		label="PRESS THE MOTHER FLIPPIN BUTTON",
 		labelColor = { default={255}, over={128} },
 		default="button.png",
 		over="button-over.png",
-		width=154, height=40,
+		width=144, height=40,
 		onRelease = onPlayBtnRelease	-- event listener function
 	}
 	playBtn.x = display.contentWidth*0.5

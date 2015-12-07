@@ -23,6 +23,13 @@ local function coinTouchHandler( event )
   audio.play(sounds)
 end
 
+physics.setDrawMode( "normal" )
+system.activate("multitouch");
+
+startTime = 60;
+totalTime = 60; 
+timeLeft = true;
+
 function scene:create( event )
 
 	-- Called when the scene's view does not exist.
@@ -32,20 +39,67 @@ function scene:create( event )
 
 local sceneGroup = self.view
 
+--function scene:createScene( event )
+  --local screenGroup = self.view
+	--backgroundMusic = audio.loadStream("TheNextEpisode.mp3")
+--end  
+ 
+ --backgroundMusicChannel = audio.play( backgroundMusic, {channel=1,loops=-1 } )
+local leftWall = display.newRect (0, 300, 1, display.contentHeight);
+local rightWall = display.newRect (display.contentWidth, 300, 1, display.contentHeight);
+ 
+-- Add physics to the walls. They will not move so they will be "static"
+physics.addBody (leftWall, "static",  { bounce = 0.7 } );
+physics.addBody (rightWall, "static", { bounce = 0.7 } );
+
 	-- create a grey rectangle as the backdrop
-local background = display.newImage( "WOOD.png" )
+local background = display.newImage( "GreenB.png" )
 	background.anchorX = 0
   background.height=530
 	background.anchorY = 0
   background.width=320
 	background:setFillColor( 1,1,1 )
   
+  function scene:enterScene( event )	
+ 
+ -- Player Score
+--function scores()
+--cScore = 0
+--cScore = display.newText(cScore, 50, 0, nil, 14);
+--dScore = display.newText("Score:", 10, 3, nil, 12)
+--dScore:setTextColor(255,255,255)
+-- Drag Handler
+--local function onTouch(event)
+--local t = event.target
+--local phase = event.phase
+--end
+
+  end
+  local counter = 60
+  local timeDisplay = display.newText(counter,0,0,native.systemFrontBold,50)
+  timeDisplay.x = 280
+  timeDisplay.y = 0
+ 
+  local function updateTimer(event)
+    counter = counter - 1
+    timeDisplay.text = counter
+       if counter == 0 then
+              -- do what you want to do when the timer ends
+    end
+ end
+ 
+    timer.performWithDelay(1000, updateTimer, 60)
+    
   local coinTable = {}
 
     coinTable[1] = "Coin.png"
     coinTable[2] = "Diamond.png"
     coinTable[3] = "MapleLeaf.png"
 print( coinTable[2] )
+
+--local Sword = display.newRect(150, 75, 75, 10);
+--physics.addBody(Sword, "static", {bounce = 0, friction = 1, density = 5})
+--Sword:addEventListener("touch", onTouch)
 
 --COINS AND SUCH
 local coin = display.newImage( "Coin.png", 90, 90 )
@@ -55,10 +109,6 @@ local coin = display.newImage( "Coin.png", 90, 90 )
   coin.height=40
   coin.width=40
 
-  --local function touchListener( event )
-   --local object = event.target
-   --print( object.name.." coin " )
---end
 --add "tap" event listener to back object and update text label
 coin:addEventListener( "touch", coinTouchHandler )
 coin.text = "touch"
@@ -75,15 +125,11 @@ local coin1 = display.newImage( "MapleLeaf.png", 90, 90 )
    print( object.name.." coin1 " )
 end
 --add "tap" event listener to back object and update text label
-coin1:addEventListener( "touch", touchListener )
+coin1:addEventListener( "touch", coinTouchHandler )
 coin1.text = "touch"
   
 local Diamond = display.newImage( "Diamond.png", 90, 90 )
---local DiamondT = display.newImage( "DiamondT.png", 90, 90 )
---local DiamondB = display.newImage( "DiamondB.png", 90, 90 )
   Diamond.name = "Diamond"
-  --DiamondT.name = "DiamondT"
-  --DiamondB.name = "DiamondB"
   Diamond.x, Diamond.y = 140, 550
   Diamond.rotation = 100
   Diamond.height=40
@@ -94,16 +140,8 @@ local Diamond = display.newImage( "Diamond.png", 90, 90 )
    print( object.name.." Diamond " )
 end
 --add "tap" event listener to back object and update text label
-Diamond:addEventListener( "touch", touchListener )
+Diamond:addEventListener( "touch", coinTouchHandler )
 Diamond.text = "touch"
-
-
---local maxPoints = 5
---local lineThickness = 20
---local lineFadeTime = 250
---local endPoints = {}
-
---Runtime:addEventListener("touch", drawSlashLine)
 
 -- Coin physics
   physics.setGravity( 0, 9.8 * 2 )
@@ -148,16 +186,26 @@ Diamond.text = "touch"
     Diamond:applyTorque( -r )
   --end
   
-  if(type == "Diamond") then
-		object:addEventListener("touch", function(event) cutDiamond(object) end)
-	else
+  --if(type == "Diamond") then
+		--object:addEventListener("touch", function(event) cutDiamond(object) end)
+	--else
+  --end
 
-function chopDiamond(Diamond)
-  createDiamondPiece(Diamondtop, "DiamondT.png")
-  createDiamondPiece(Diamondbottom, "DiamondB.png")
-  Diamond:removeSelf()
-  end
-end
+--function Sword:collision(e)
+--if (e.phase == "began") then
+--ydirection = ydirection * -1
+--cScore.text = cScore.text + 1
+--print(e.target.class,"collided with",e.other.class)
+--end
+--return true
+--end
+
+--function chopDiamond(Diamond)
+  --createDiamondPiece(Diamondtop, "DiamondT.png")
+  --createDiamondPiece(Diamondbottom, "DiamondB.png")
+  --Diamond:removeSelf()
+  --end
+--end
 
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
@@ -167,8 +215,7 @@ end
   --sceneGroup:insert( DiamondT )
   --sceneGroup:insert( DiamondB )
   
-end
-
+  end
 
 function scene:show( event )
 	local sceneGroup = self.view
