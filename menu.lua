@@ -45,7 +45,7 @@ function scene:create( event )
 	
 	-- create a widget button (which will loads level1.lua on release)
 	playBtn = widget.newButton{
-		label="PRESS THE MOTHER FLIPPIN BUTTON",
+		label="PRESS THIS BUTTON",
 		labelColor = { default={255}, over={128} },
 		default="button.png",
 		over="button-over.png",
