@@ -24,6 +24,9 @@ local genericCoin = coins
 math.randomseed( os.time() )
 os.clock ()
 
+local dubstep = audio.loadStream( "NinjaDubstep.mp3" )
+local dubstep = audio.play( dubstep, { duration = 61500, onComplete = finished })
+
 local function splitCoin( name )
   if name == "diamond" then
     print(name)
@@ -45,10 +48,11 @@ local function coinTouchHandler( event )
   elseif event.phase == "ended" then
     scoreTotal = scoreTotal + event.target.coinValue
     print(scoreTotal)
+    --print(event.target)
     splitCoin( event.target.name )
   end
 end
-
+ 
 local function createCoin( name, score )
   local genericCoin
   if name == "diamond" then
@@ -79,14 +83,14 @@ end
 local function shootObject(type)
   -- logic for random coin
   local r = math.random( 1, 4 )
-    print(r)
+    --print(r)
   local object = createCoin(coins[r],coinsScore[r])
   -- How I make the coin fly
-  physics.addBody( object, { radius=20, density=1.0, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}} )
+  physics.addBody( object, { radius=20, density=1.5, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}} )
   physics.addBody( object, "dynamic" ) 
   --physics.setPreCollision = "passthru"
-    local v = math.random( 450, 760 )
-    local b = math.random( -70, 70 )
+    local v = math.random( 340, 560 )
+    local b = math.random( -65, 65 )
     local c = math.random( 20, 60 )
     object:setLinearVelocity( b, -v )
     object:applyTorque( -c )
@@ -111,9 +115,8 @@ local function startgame()
 end 
 
 
---physics.setDrawMode( "debug" )
+physics.setDrawMode( "hybrid" )
 --system.activate("multitouch");
-
 function scene:create( event )
 
 	-- Called when the scene's view does not exist.
@@ -159,17 +162,17 @@ timeLeft = true;
        if counter == 0 then
             -- do what you want to do when the timer ends
     end
- end
+  end
  
     timer.performWithDelay(1000, updateTimer, 60)
-
+  
 --COINS AND SUCH
   coin = createCoin( "coin", 25 )
   mapleLeaf = createCoin( "mapleLeaf", 50 )
   diamond = createCoin( "diamond", 100 )
   C4 = createCoin( "C4", -100 )
 -- Coin physics
-  physics.setGravity( 0, 9.8 * 2 )
+  physics.setGravity( 0, 4.9 * 2 )
 
   
   --if(type == "Diamond") then
