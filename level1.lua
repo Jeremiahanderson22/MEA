@@ -21,11 +21,16 @@ local coinTimer
 local coins = {"coin", "mapleLeaf", "diamond", "C4"}
 local coinsScore = { 25, 50, 100, -100 }
 local genericCoin = coins
+--local splitCoin = {"DiamondB", "DiamondT"}
 math.randomseed( os.time() )
 os.clock ()
 
 local dubstep = audio.loadStream( "NinjaDubstep.mp3" )
-local dubstep = audio.play( dubstep, { duration = 61500, onComplete = finished })
+dubstep = audio.play( dubstep, { duration = 61500, onComplete = finished })
+
+
+local coinsProp = {radius=20, density=1.0, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}}
+local allCoins = {}
 
 local function splitCoin( name )
   if name == "diamond" then
@@ -34,25 +39,24 @@ local function splitCoin( name )
     print(name)
   elseif name == "mapleLeaf" then
     print(name)
+  elseif name == "C4" then
+    print(name)
   end
 end
 
-local coinsProp = {radius=20, density=1.0, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}}
-local allCoins = {}
-
 local function coinTouchHandler( event )
-  if event.phase == "began" then
+  --if event.phase == "began" then
     local sounds = audio.loadSound("METALonMETAL.mp3");
     audio.play(sounds)
     print("begin "..event.target.name)
-  elseif event.phase == "ended" then
+  --elseif event.phase == "ended" then
     scoreTotal = scoreTotal + event.target.coinValue
     print(scoreTotal)
     --print(event.target)
     splitCoin( event.target.name )
-  end
+  --end
 end
- 
+
 local function createCoin( name, score )
   local genericCoin
   if name == "diamond" then
@@ -70,7 +74,7 @@ local function createCoin( name, score )
   genericCoin.height = 50
   genericCoin.width = 50
   genericCoin.coinValue = score
-
+  
   genericCoin:addEventListener( "touch", coinTouchHandler )
   return genericCoin
 end
@@ -96,7 +100,6 @@ local function shootObject(type)
     object:applyTorque( -c )
   end
 
-
 --coin timer
 local function onCoinTimer( event )
   shootObject("genericCoin")
@@ -111,12 +114,43 @@ end
 local function startgame()
   shootObject("genericCoin")
   shootObject("genericCoin")
-    coinTimer = timer.performWithDelay( 1000 , onCoinTimer, 57 )
+  coinTimer = timer.performWithDelay( 1000 , onCoinTimer, 58 )
 end 
 
 
-physics.setDrawMode( "hybrid" )
+--physics.setDrawMode( "hybrid" )
 --system.activate("multitouch");
+
+--Code for line we totally did not steal
+local maxPoints = 3
+local lineThickness = 12
+local endPoints = {}
+
+local function movePoint(event)
+-- Insert a new point into the front of the array
+    table.insert(endPoints, 1, {x = event.x, y = event.y, line= nil}) 
+-- Remove any excessed points
+  if(#endPoints > maxPoints) then 
+    table.remove(endPoints)
+  end
+ 
+  for i,v in ipairs(endPoints) do
+  local line = display.newLine(v.x, v.y, event.x, event.y)
+    line.strokeWidth = lineThickness
+      transition.to(line, { alpha = 0, strokeWidth = 0, onComplete = function(event) line:removeSelf() end})                
+  end
+ 
+	if event.phase == "ended" then
+		touchEnd = 1
+  while(#endPoints > 0) do
+		table.remove(endPoints)
+  end
+  elseif event.phase == "began" then
+		touchEnd = 0
+	end
+end
+Runtime:addEventListener("touch", movePoint)
+
 function scene:create( event )
 
 	-- Called when the scene's view does not exist.
@@ -124,12 +158,7 @@ function scene:create( event )
 	-- INSERT code here to initialize the scene
 	-- e.g. add display objects to 'sceneGroup', add touch listeners, etc.
 
-local sceneGroup = self.view
-
---function scene:createScene( event )
-  --local screenGroup = self.view
-	--backgroundMusic = audio.loadStream("TheNextEpisode.mp3")
---end  
+local sceneGroup = self.view 
  
  --backgroundMusicChannel = audio.play( backgroundMusic, {channel=1,loops=-1 } )
 local leftWall = display.newRect (0, 300, 1, display.contentHeight);
@@ -146,8 +175,16 @@ local background = display.newImage( "GreenB.png" )
 	background.anchorY = 0
   background.width=320
 	background:setFillColor( 1,1,1 )
-  
 
+
+  
+  local scoreTotal = display.newText(scoreTotal,40,0,native.systemFrontBold,50)
+  
+  local function updateScoreTotal(event)
+    scoreTotal = scoreTotal + event.target.coinValue
+    scoreTotal.text = scoreTotal
+  end
+  
   local counter = 60
   local timeDisplay = display.newText(counter,0,0,native.systemFrontBold,50)
   timeDisplay.x = 280
