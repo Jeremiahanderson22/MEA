@@ -16,6 +16,7 @@ physics.start(); physics.pause()
 -- forward declarations and other locals
 local screenW, screenH, halfW = display.contentWidth, display.contentHeight, display.contentWidth*0.5
 local scoreTotal = 0
+local scoreBoard
 local coin, mapleLeaf, diamond, C4
 local coinTimer
 local coins = {"coin", "mapleLeaf", "diamond", "C4"}
@@ -25,13 +26,13 @@ local genericCoin = coins
 math.randomseed( os.time() )
 os.clock ()
 
-local dubstep = audio.loadStream( "NinjaDubstep.mp3" )
+local dubstep = audio.loadStream( "Ninja2.mp3" )
 dubstep = audio.play( dubstep, { duration = 61500, onComplete = finished })
 
 
 local coinsProp = {radius=20, density=1.0, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}}
 local allCoins = {}
-
+  
 local function splitCoin( name )
   if name == "diamond" then
     print(name)
@@ -51,6 +52,7 @@ local function coinTouchHandler( event )
     print("begin "..event.target.name)
   --elseif event.phase == "ended" then
     scoreTotal = scoreTotal + event.target.coinValue
+    scoreBoard.text = string.format("%d", scoreTotal ) 
     print(scoreTotal)
     --print(event.target)
     splitCoin( event.target.name )
@@ -175,23 +177,16 @@ local background = display.newImage( "GreenB.png" )
 	background.anchorY = 0
   background.width=320
 	background:setFillColor( 1,1,1 )
-
-
   
-  local scoreTotal = display.newText(scoreTotal,40,0,native.systemFrontBold,50)
+  scoreBoard = display.newText(scoreTotal,55,0,native.systemFrontBold,40)
   
-  local function updateScoreTotal(event)
-    scoreTotal = scoreTotal + event.target.coinValue
-    scoreTotal.text = scoreTotal
-  end
-  
-  local counter = 60
-  local timeDisplay = display.newText(counter,0,0,native.systemFrontBold,50)
+local counter = 60
+local timeDisplay = display.newText(counter,0,0,native.systemFrontBold,40)
   timeDisplay.x = 280
   timeDisplay.y = 0
- startTime = 60;
-totalTime = 60; 
-timeLeft = true;
+    startTime = 60;
+    totalTime = 60; 
+      timeLeft = true;
 
   local function updateTimer(event)
     counter = counter - 1
