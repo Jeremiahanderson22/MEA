@@ -17,23 +17,61 @@ physics.start(); physics.pause()
 local screenW, screenH, halfW = display.contentWidth, display.contentHeight, display.contentWidth*0.5
 local scoreTotal = 0
 local scoreBoard
+local highscore
 local coin, mapleLeaf, diamond, C4
 local coinTimer
 local coins = {"coin", "mapleLeaf", "diamond", "C4"}
-local coinsScore = { 25, 50, 100, -100 }
-local genericCoin = coins
---local splitCoin = {"DiamondB", "DiamondT"}
+local coinsScore = { 1, 5, 10, -10 }
+--local genericCoin = coins
+local pauseButton
+local splitCoin = {"DiamondT", "DiamondB", "CoinTop", "CoinBottom", "MapleLeafT", "MapleLeafB"}
 math.randomseed( os.time() )
 os.clock ()
 
-local dubstep = audio.loadStream( "Ninja2.mp3" )
+local dubstep = audio.loadStream( "NinjaDubstep.mp3" )
 dubstep = audio.play( dubstep, { duration = 61500, onComplete = finished })
+
+ego = require "ego"
+saveFile = ego.saveFile
+loadFile = ego.loadFile
 
 
 local coinsProp = {radius=20, density=1.0, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}}
+
+local splitCoinProp = {radius=20, density=1.0, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}}
 local allCoins = {}
+
+local function initGroups()
+  coinGroup = display.newGroup()
+end
+
+local function initCoins()
+  local diamond = {}
+    diamond.whole = "Diamond.png"
+    diamond.top = "DiamondT.png"
+    diamond.bottom = "DiamondB.png"
+  table.insert( allCoins, diamond )
   
-local function splitCoin( name )
+  local coin = {}
+    coin.whole = "Coin.png"
+    coin.top = "CoinTop.png"
+    coin.bottom = "CoinBottom.png"
+  table.insert( allCoins, coin )
+  
+  local mapleLeaf = {}
+    mapleLeaf.whole = "MapleLeaf.png"
+    mapleLeaf.top = "MapleLeafT.png"
+    mapleLeaf.bottom = "MapleLeafB.png"
+  table.insert( allCoins, mapleLeaf )
+  
+  local C4 = {}
+    C4.whole = "C4.png"
+    --diamond.top = "DiamondT.png"
+    --diamond.bottom = "DiamondB.png"
+  table.insert( allCoins, C4 )
+end
+
+--[[local function splitCoin( name )
   if name == "diamond" then
     print(name)
   elseif name == "coin" then
@@ -43,7 +81,7 @@ local function splitCoin( name )
   elseif name == "C4" then
     print(name)
   end
-end
+end--]]
 
 local function coinTouchHandler( event )
   --if event.phase == "began" then
@@ -51,77 +89,127 @@ local function coinTouchHandler( event )
     audio.play(sounds)
     print("begin "..event.target.name)
   --elseif event.phase == "ended" then
-    scoreTotal = scoreTotal + event.target.coinValue
-    scoreBoard.text = string.format("%d", scoreTotal ) 
+    --scoreTotal = scoreTotal + event.target.coinValue
+    scoreTotal = highscore
+    --scoreBoard.text = string.format("%d", scoreTotal ) 
     print(scoreTotal)
     --print(event.target)
-    splitCoin( event.target.name )
+    --splitCoin( event.target.name )
   --end
 end
-
-local function createCoin( name, score )
-  local genericCoin
+-- All of the normal coins
+local function createCoins( name, score )
+  local initCoins
   if name == "diamond" then
-    genericCoin = display.newImage( "Diamond.png", 90, 90 )
+    initCoins = display.newImage( "Diamond.png", 90, 90 )
   elseif name == "coin" then
-    genericCoin = display.newImage( "Coin.png", 90, 90 )
+    initCoins = display.newImage( "Coin.png", 90, 90 )
   elseif name == "mapleLeaf" then
-    genericCoin = display.newImage( "MapleLeaf.png", 90, 90 )
+    initCoins = display.newImage( "MapleLeaf.png", 90, 90 )
   elseif name == "C4" then
-    genericCoin = display.newImage( "C4.png", 90, 90 )
-  end
-  genericCoin.name = name
-  genericCoin.x, genericCoin.y = 140, 550
-  genericCoin.rotation = 100
-  genericCoin.height = 50
-  genericCoin.width = 50
-  genericCoin.coinValue = score
+    initCoins = display.newImage( "C4.png", 90, 90 )
+end
+
+  initCoins.name = name
+  initCoins.x, initCoins.y = 140, 550
+  initCoins.rotation = 100
+  initCoins.height = 50
+  initCoins.width = 50
+  initCoins.coinValue = score
   
-  genericCoin:addEventListener( "touch", coinTouchHandler )
-  return genericCoin
+  splitCoin.name = name
+  splitCoin.x, splitCoin.y = 140, 550
+  splitCoin.rotation = 100
+  splitCoin.height = 50
+  splitCoin.width = 50
+
+
+  initCoins:addEventListener( "touch", coinTouchHandler )
+  return initCoins
 end
 
 local function getRandomCoin()
-  local coinsProp = genericCoin[math.random(1, #genericCoin)]
+  local coinsProp = allCoins[math.random(1, #allCoins)]
   local coins = display.newImage(coinsProp.whole)
+  coins.whole = coinsProp
+  coins.top = splitCoinProp
+  coins.bottom = splitCoinProp
+    return coins
 end 
 
 local function shootObject(type)
   -- logic for random coin
-  local r = math.random( 1, 4 )
+  --local r = math.random( 1, 4 )
     --print(r)
-  local object = createCoin(coins[r],coinsScore[r])
+  --local object = createCoin(coins[r],coinsScore[r])
+    local object
+    if(type == "initCoins") then
+      object = getRandomCoin()
+    else
+    end
   -- How I make the coin fly
-  physics.addBody( object, { radius=20, density=1.5, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}} )
-  physics.addBody( object, "dynamic" ) 
+    physics.addBody( object, { radius=20, density=1.5, friction=0.3, bounce=0.2, filter = {categoryBits = 2, maskBits = 1}} )
+    physics.addBody( object, "dynamic" ) 
   --physics.setPreCollision = "passthru"
     local v = math.random( 340, 560 )
     local b = math.random( -65, 65 )
     local c = math.random( 20, 60 )
     object:setLinearVelocity( b, -v )
     object:applyTorque( -c )
-  end
+end
+
+--[[ Split coins
+splitCoin.name = name
+splitCoin.x, splitCoin.y = 140, 550
+splitCoin.rotation = 100
+splitCoin.height = 50
+splitCoin.width = 50
+end--]]
 
 --coin timer
 local function onCoinTimer( event )
-  shootObject("genericCoin")
-  shootObject("genericCoin")
+  shootObject("initCoins")
+  shootObject("initCoins")
 end
 
 local function onEndGame( event )
   -- stop all timers here
-  --timer.cancel (coinTimer)
+  timer.cancel (coinTimer)
 end
 
 local function startgame()
-  shootObject("genericCoin")
-  shootObject("genericCoin")
-  coinTimer = timer.performWithDelay( 1000 , onCoinTimer, 58 )
+  initCoins()
+  shootObject("initCoins")
+  shootObject("initCoins")
+  coinTimer = timer.performWithDelay( 1000 , onCoinTimer, 55 )
 end 
 
-
---physics.setDrawMode( "hybrid" )
+physics.setDrawMode( "hybrid" )
 --system.activate("multitouch");
+
+  
+  highscore = loadFile ("highscore.txt")
+  --If the file is empty (this means it is the first time you've run the app) save it as 0
+  local function checkForFile ()
+    if highscore == "empty" then
+      highscore = 0
+      saveFile("highscore.txt", highscore)
+    end
+  end
+  
+  checkForFile()
+
+  --Print the current highscore
+  print ("Highscore is", highscore)
+  
+  local function onSystemEvent ()
+    if score > tonumber(highscore) then --We use tonumber as highscore is a string when loaded
+      saveFile("highscore.txt", highscore)
+    end
+  end
+
+Runtime:addEventListener( "system", onSystemEvent )
+
 
 --Code for line we totally did not steal
 local maxPoints = 3
@@ -134,19 +222,19 @@ local function movePoint(event)
 -- Remove any excessed points
   if(#endPoints > maxPoints) then 
     table.remove(endPoints)
-  end
+end
  
   for i,v in ipairs(endPoints) do
   local line = display.newLine(v.x, v.y, event.x, event.y)
     line.strokeWidth = lineThickness
       transition.to(line, { alpha = 0, strokeWidth = 0, onComplete = function(event) line:removeSelf() end})                
-  end
+end
  
 	if event.phase == "ended" then
 		touchEnd = 1
   while(#endPoints > 0) do
 		table.remove(endPoints)
-  end
+end
   elseif event.phase == "began" then
 		touchEnd = 0
 	end
@@ -155,13 +243,8 @@ Runtime:addEventListener("touch", movePoint)
 
 function scene:create( event )
 
-	-- Called when the scene's view does not exist.
-	-- 
-	-- INSERT code here to initialize the scene
-	-- e.g. add display objects to 'sceneGroup', add touch listeners, etc.
-
 local sceneGroup = self.view 
- 
+
  --backgroundMusicChannel = audio.play( backgroundMusic, {channel=1,loops=-1 } )
 local leftWall = display.newRect (0, 300, 1, display.contentHeight);
 local rightWall = display.newRect (display.contentWidth, 300, 1, display.contentHeight);
@@ -178,32 +261,39 @@ local background = display.newImage( "GreenB.png" )
   background.width=320
 	background:setFillColor( 1,1,1 )
   
-  scoreBoard = display.newText(scoreTotal,55,0,native.systemFrontBold,40)
+  scoreBoard = display.newText(scoreTotal,70,0,native.systemFrontBold,40)
   
-local counter = 60
-local timeDisplay = display.newText(counter,0,0,native.systemFrontBold,40)
-  timeDisplay.x = 280
-  timeDisplay.y = 0
-    startTime = 60;
-    totalTime = 60; 
-      timeLeft = true;
+  highscore = display.newText("HighScore: 8536",70,30,native.systemFrontBold,15)
 
+  local counter = 60
+  local timeDisplay = display.newText(counter,0,0,native.systemFrontBold,40)
+    timeDisplay.x = 280
+    timeDisplay.y = 0
+      startTime = 60;
+      totalTime = 60; 
+        timeLeft = true;
+  
   local function updateTimer(event)
     counter = counter - 1
     timeDisplay.text = counter
-       if counter == 0 then
-            -- do what you want to do when the timer ends
-    end
+      if counter == 0 then
+        physics.stop()
+    end    
   end
  
-    timer.performWithDelay(1000, updateTimer, 60)
+timer.performWithDelay(1000, updateTimer, 60)
+
+pauseButton = display.newImage("pauseButton.png",230,7.5)
+  pauseButton.height = 55
+  pauseButton.width = 50
   
 --COINS AND SUCH
-  coin = createCoin( "coin", 25 )
-  mapleLeaf = createCoin( "mapleLeaf", 50 )
-  diamond = createCoin( "diamond", 100 )
-  C4 = createCoin( "C4", -100 )
--- Coin physics
+  coin = createCoins( "coin", 1 )
+  mapleLeaf = createCoins( "mapleLeaf", 5 )
+  diamond = createCoins( "diamond", 10 )
+  C4 = createCoins( "C4", -10 )
+--Split Coins
+ 
   physics.setGravity( 0, 4.9 * 2 )
 
   
@@ -225,9 +315,15 @@ local timeDisplay = display.newText(counter,0,0,native.systemFrontBold,40)
   sceneGroup:insert( mapleLeaf )
   sceneGroup:insert( diamond )
   sceneGroup:insert( C4 )
-  --sceneGroup:insert( DiamondT )
-  --sceneGroup:insert( DiamondB )
+  sceneGroup:insert( pauseButton )
+  --[[sceneGroup:insert( DiamondT )
+  sceneGroup:insert( DiamondB )
+  sceneGroup:insert( MapleLeafT )
+  sceneGroup:insert( MapleLeafB )
+  sceneGroup:insert( CoinTop )
+  sceneGroup:insert( CoinBottom )--]]
 end
+
 
 function scene:show( event )
 	local sceneGroup = self.view
